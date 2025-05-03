@@ -28,9 +28,17 @@
         android:name="ru.mirea.krasikovaaa.mireaproject.DataFragment"
         android:label="Информация"
         tools:layout="@layout/fragment_data" />
+
     <fragment
         android:id="@+id/nav_webview"
         android:name="ru.mirea.krasikovaaa.mireaproject.WebViewFragment"
         android:label="Веб-браузер"
         tools:layout="@layout/fragment_web_view" />
+
+    <fragment
+        android:id="@+id/nav_background"
+        android:name="ru.mirea.krasikovaaa.mireaproject.BackgroundTaskFragment"
+        android:label="BackgroundTask"
+        tools:layout="@layout/fragment_web_view" />
+
 </navigation>
