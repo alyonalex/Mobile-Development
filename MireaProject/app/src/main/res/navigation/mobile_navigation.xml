@@ -41,4 +41,22 @@
         android:label="BackgroundTask"
         tools:layout="@layout/fragment_web_view" />
 
+    <fragment
+        android:id="@+id/nav_compass"
+        android:name="ru.mirea.krasikovaaa.mireaproject.SensorFragment"
+        android:label="Компас"
+        tools:layout="@layout/fragment_sensor" />
+
+    <fragment
+        android:id="@+id/nav_camera"
+        android:name="ru.mirea.krasikovaaa.mireaproject.CameraFragment"
+        android:label="Камера"
+        tools:layout="@layout/fragment_camera" />
+
+    <fragment
+        android:id="@+id/nav_microphone"
+        android:name="ru.mirea.krasikovaaa.mireaproject.MicrophoneFragment"
+        android:label="Микрофон"
+        tools:layout="@layout/fragment_microphone" />
+
 </navigation>

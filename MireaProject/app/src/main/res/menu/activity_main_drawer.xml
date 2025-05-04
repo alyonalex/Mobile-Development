@@ -32,5 +32,20 @@
             android:icon="@drawable/ic_task_foreground"
             android:title="Фоновая задача" />
 
+        <item
+            android:id="@+id/nav_compass"
+            android:icon="@drawable/ic_compass_foreground"
+            android:title="Компас" />
+
+        <item
+            android:id="@+id/nav_camera"
+            android:icon="@drawable/ic_camera_foreground"
+            android:title="Камера" />
+
+        <item
+            android:id="@+id/nav_microphone"
+            android:icon="@drawable/ic_microphone_foreground"
+            android:title="Микрофон" />
+
     </group>
 </menu>
