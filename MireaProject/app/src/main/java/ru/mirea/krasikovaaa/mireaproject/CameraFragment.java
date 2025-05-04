@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -12,6 +13,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -31,69 +37,73 @@ import java.util.Locale;
 import ru.mirea.krasikovaaa.mireaproject.databinding.FragmentCameraBinding;
 
 public class CameraFragment extends Fragment {
-    private static final int REQUEST_CODE_PERMISSION = 100;
-    private boolean isWork = false;
-    private Uri imageUri;
-    private FragmentCameraBinding binding;
 
-    private ActivityResultLauncher<Intent> cameraActivityResultLauncher;
+    private ImageView imageView;
+    private EditText editTextName, editTextGroup, editTextTitle, editTextContent;
+    private TextView textViewIntro, textViewFullNotice;
+    private final ActivityResultLauncher<Intent> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == requireActivity().RESULT_OK && result.getData() != null) {
+                    Bundle extras = result.getData().getExtras();
+                    Bitmap imageBitmap = (Bitmap) extras.get("data");
+                    imageView.setImageBitmap(imageBitmap);
+                } else {
+                    Toast.makeText(requireContext(), "Не удалось сделать фото", Toast.LENGTH_SHORT).show();
+                }
+            });
+    private final ActivityResultLauncher<String> permissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    launchCamera();
+                } else {
+                    Toast.makeText(requireContext(), "Для съемки фото требуется разрешение на использование камеры", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        binding = FragmentCameraBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_camera, container, false);
 
-        int cameraPermissionStatus = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA);
-        int storagePermissionStatus = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        textViewIntro = view.findViewById(R.id.textViewIntro);
+        imageView = view.findViewById(R.id.imageView);
+        editTextName = view.findViewById(R.id.editTextName);
+        editTextGroup = view.findViewById(R.id.editTextGroup);
+        editTextTitle = view.findViewById(R.id.editTextTitle);
+        editTextContent = view.findViewById(R.id.editTextContent);
+        Button buttonAddImage = view.findViewById(R.id.buttonAddImage);
+        Button buttonSave = view.findViewById(R.id.buttonSave);
 
-        if (cameraPermissionStatus == PackageManager.PERMISSION_GRANTED &&
-                storagePermissionStatus == PackageManager.PERMISSION_GRANTED) {
-            isWork = true;
-        } else {
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            }, REQUEST_CODE_PERMISSION);
-        }
-
-        cameraActivityResultLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        if (result.getResultCode() == Activity.RESULT_OK) {
-                            binding.imageView.setImageURI(imageUri);
-                        }
-                    }
-                }
-        );
-
-        binding.imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isWork) {
-                    try {
-                        File photoFile = createImageFile();
-                        String authorities = requireContext().getPackageName() + ".fileprovider";
-                        imageUri = FileProvider.getUriForFile(requireContext(), authorities, photoFile);
-                        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                        cameraActivityResultLauncher.launch(cameraIntent);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+        buttonAddImage.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                launchCamera();
+            } else {
+                permissionLauncher.launch(Manifest.permission.CAMERA);
             }
         });
 
-        return root;
+        buttonSave.setOnClickListener(v -> {
+            String name = editTextName.getText().toString().trim();
+            String group = editTextGroup.getText().toString().trim();
+            String title = editTextTitle.getText().toString().trim();
+            String content = editTextContent.getText().toString().trim();
+
+            if (name.isEmpty() || group.isEmpty() || title.isEmpty() || content.isEmpty()) {
+                Toast.makeText(requireContext(), "Пожалуйста, заполните все поля", Toast.LENGTH_SHORT).show();
+            } else {
+                String fullNotice = "ФИО: " + name + "\n" +
+                        "Группа: " + group + "\n" +
+                        "Название заметки: " + title + "\n" +
+                        "Текст заметки: " + title;
+                textViewFullNotice.setText(fullNotice);
+                Toast.makeText(requireContext(), "Профиль сохранен", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        return view;
     }
 
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(new Date());
-        String imageFileName = "IMAGE_" + timeStamp + "_";
-        File storageDirectory = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imageFileName, ".jpg", storageDirectory);
+    private void launchCamera() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraLauncher.launch(takePictureIntent);
     }
 }
