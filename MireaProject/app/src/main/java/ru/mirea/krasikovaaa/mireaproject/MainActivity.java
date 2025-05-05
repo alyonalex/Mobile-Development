@@ -61,7 +61,9 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_background,
                 R.id.nav_compass,
                 R.id.nav_camera,
-                R.id.nav_microphone)
+                R.id.nav_microphone,
+                R.id.nav_profile,
+                R.id.nav_files)
                 .setOpenableLayout(drawer)
                 .build();
 
